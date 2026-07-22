@@ -1,4 +1,7 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import (
+    ReplyKeyboardMarkup,
+    KeyboardButton,
+)
 
 
 def super_admin_menu():
@@ -13,7 +16,11 @@ def super_admin_menu():
                 KeyboardButton(text="📊 Hisobot"),
             ],
             [
-                KeyboardButton(text="⚙ Sozlamalar"),
+                KeyboardButton(text="📥 Tekshirilayotgan vazifalar"),
+                KeyboardButton(text="🔍 Qidiruv"),
+            ],
+            [
+                KeyboardButton(text="⚙️ Sozlamalar"),
             ],
         ],
         resize_keyboard=True,
@@ -25,6 +32,9 @@ def employee_menu():
         keyboard=[
             [
                 KeyboardButton(text="📋 Mening vazifalarim"),
+            ],
+            [
+                KeyboardButton(text="✅ Vazifani yakunlash"),
             ],
             [
                 KeyboardButton(text="📊 Hisobotim"),

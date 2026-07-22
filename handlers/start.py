@@ -1,8 +1,14 @@
 from aiogram import Router
 from aiogram.filters import CommandStart
-from aiogram.types import Message
+from aiogram.types import (
+    Message,
+    ReplyKeyboardMarkup,
+    KeyboardButton,
+)
+from aiogram.fsm.context import FSMContext
 
-from config import SUPER_ADMIN_ID
+from services.user_service import get_user
+
 from keyboards.main_menu import (
     super_admin_menu,
     employee_menu,
@@ -11,20 +17,53 @@ from keyboards.main_menu import (
 router = Router()
 
 
-@router.message(CommandStart())
-async def start(message: Message):
+phone_keyboard = ReplyKeyboardMarkup(
+    keyboard=[
+        [
+            KeyboardButton(
+                text="📱 Kirish",
+            )
+        ]
+    ],
+    resize_keyboard=True,
+)
 
-    if message.from_user.id == SUPER_ADMIN_ID:
+
+@router.message(CommandStart())
+async def start(
+    message: Message,
+    state: FSMContext,
+):
+
+    await state.clear()
+
+    user = await get_user(
+        message.from_user.id,
+    )
+
+    if user is None:
 
         await message.answer(
-            "👑 Assalomu alaykum!\n\n"
-            "TaskFlow tizimiga xush kelibsiz.",
+            "Assalomu alaykum.\n\n"
+            "Tizimga kirish uchun tugmani bosing.",
+            reply_markup=phone_keyboard,
+        )
+
+        return
+
+    if user.role in (
+        "super_admin",
+        "leader",
+    ):
+
+        await message.answer(
+            f"👋 Xush kelibsiz, {user.full_name}",
             reply_markup=super_admin_menu(),
         )
 
-    else:
+        return
 
-        await message.answer(
-            "Assalomu alaykum.",
-            reply_markup=employee_menu(),
-        )
+    await message.answer(
+        f"👋 Xush kelibsiz, {user.full_name}",
+        reply_markup=employee_menu(),
+    )

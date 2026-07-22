@@ -50,6 +50,25 @@ async def delete_employee_menu(message: Message, state: FSMContext):
 @router.message(DeleteEmployee.waiting_employee)
 async def delete_selected_employee(message: Message, state: FSMContext):
 
+    if message.text == "⬅️ Orqaga":
+
+        await state.clear()
+
+        await message.answer(
+            "👷 Xodimlar bo'limi",
+            reply_markup=ReplyKeyboardMarkup(
+                keyboard=[
+                    [KeyboardButton(text="➕ Xodim qo'shish")],
+                    [KeyboardButton(text="📋 Xodimlar ro'yxati")],
+                    [KeyboardButton(text="❌ Xodimni o'chirish")],
+                    [KeyboardButton(text="⬅️ Orqaga")],
+                ],
+                resize_keyboard=True,
+            ),
+        )
+
+        return
+
     data = await state.get_data()
 
     employees = data["employees"]

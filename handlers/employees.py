@@ -104,6 +104,17 @@ async def employee_leader(message: Message, state: FSMContext):
 
     leaders = data["leaders"]
 
+    if message.text == "⬅️ Orqaga":
+
+        await state.clear()
+
+        await message.answer(
+            "👷 Xodimlar bo'limi",
+            reply_markup=employees_menu(),
+        )
+
+        return
+
     leader = None
 
     for item in leaders:
@@ -150,10 +161,3 @@ async def employees_list(message: Message):
     await message.answer(text)
 
 
-@router.message(F.text == "⬅️ Orqaga")
-async def back(message: Message):
-
-    await message.answer(
-        "👑 Super Admin menyusi",
-        reply_markup=super_admin_menu(),
-    )

@@ -12,6 +12,20 @@ async def get_user(telegram_id: int):
         return result.scalar_one_or_none()
 
 
+
+
+async def get_user_by_id(user_id: int):
+    async with SessionLocal() as session:
+        return await session.get(User, user_id)
+
+async def get_super_admin():
+    async with SessionLocal() as session:
+        result = await session.execute(
+            select(User).where(User.role == "super_admin")
+        )
+        return result.scalar_one_or_none()
+
+
 async def create_leader(full_name: str, phone: str):
     async with SessionLocal() as session:
         user = User(
@@ -51,21 +65,62 @@ async def get_employees():
         return result.scalars().all()
 
 
+async def get_employee_by_name(full_name: str):
+    async with SessionLocal() as session:
+        result = await session.execute(
+            select(User).where(
+                User.full_name == full_name,
+                User.role == "employee",
+            )
+        )
+        return result.scalar_one_or_none()
+
+
+async def get_leader_by_telegram(telegram_id: int):
+    async with SessionLocal() as session:
+        result = await session.execute(
+            select(User).where(
+                User.telegram_id == telegram_id,
+                User.role == "leader",
+            )
+        )
+        return result.scalar_one_or_none()
+
+
 async def delete_leader(user_id: int):
     async with SessionLocal() as session:
-
         await session.execute(
             delete(User).where(User.id == user_id)
         )
-
         await session.commit()
 
 
 async def delete_employee(user_id: int):
     async with SessionLocal() as session:
-
         await session.execute(
             delete(User).where(User.id == user_id)
         )
+        await session.commit()
+
+
+async def get_user_by_phone(phone: str):
+    async with SessionLocal() as session:
+        result = await session.execute(
+            select(User).where(User.phone == phone)
+        )
+        return result.scalar_one_or_none()
+
+
+async def bind_telegram(user_id: int, telegram_id: int):
+    async with SessionLocal() as session:
+
+        user = await session.get(User, user_id)
+
+        if user is None:
+            return False
+
+        user.telegram_id = telegram_id
 
         await session.commit()
+
+        return True

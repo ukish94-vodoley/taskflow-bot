@@ -3,6 +3,8 @@ from models.base import Base
 
 # Modellarni import qilish
 from models.user import User
+from models.task import Task
+from models.task_attachment import TaskAttachment
 
 
 async def init_db():

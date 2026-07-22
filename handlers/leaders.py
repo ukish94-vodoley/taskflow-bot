@@ -28,16 +28,6 @@ async def leaders(message: Message):
     )
 
 
-@router.message(F.text == "⬅️ Orqaga")
-async def back(message: Message):
-
-    if message.from_user.id == SUPER_ADMIN_ID:
-        await message.answer(
-            "👑 Super Admin menyusi",
-            reply_markup=super_admin_menu(),
-        )
-
-
 @router.message(F.text == "➕ Rahbar qo'shish")
 async def add_leader(message: Message, state: FSMContext):
     await state.set_state(AddLeader.waiting_name)
@@ -46,13 +36,44 @@ async def add_leader(message: Message, state: FSMContext):
 
 @router.message(AddLeader.waiting_name)
 async def leader_name(message: Message, state: FSMContext):
-    await state.update_data(full_name=message.text)
-    await state.set_state(AddLeader.waiting_phone)
-    await message.answer("📱 Telefon raqamini kiriting:")
+
+    if message.text == "⬅️ Orqaga":
+
+        await state.clear()
+
+        await message.answer(
+            "👥 Rahbarlar bo'limi",
+            reply_markup=leaders_menu,
+        )
+
+        return
+
+    await state.update_data(
+        full_name=message.text
+    )
+
+    await state.set_state(
+        AddLeader.waiting_phone
+    )
+
+    await message.answer(
+        "📱 Telefon raqamini kiriting:"
+    )
 
 
 @router.message(AddLeader.waiting_phone)
 async def leader_phone(message: Message, state: FSMContext):
+    if message.text == "⬅️ Orqaga":
+
+        await state.clear()
+
+        await message.answer(
+            "👥 Rahbarlar bo'limi",
+            reply_markup=leaders_menu,
+        )
+
+        return
+    
     data = await state.get_data()
 
     await create_leader(

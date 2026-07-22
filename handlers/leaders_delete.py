@@ -51,6 +51,25 @@ async def delete_leader_menu(message: Message, state: FSMContext):
 @router.message(DeleteLeader.waiting_leader)
 async def delete_selected_leader(message: Message, state: FSMContext):
 
+    if message.text == "⬅️ Orqaga":
+
+        await state.clear()
+
+        await message.answer(
+            "👥 Rahbarlar bo'limi",
+            reply_markup=ReplyKeyboardMarkup(
+                keyboard=[
+                    [KeyboardButton(text="➕ Rahbar qo'shish")],
+                    [KeyboardButton(text="📋 Rahbarlar ro'yxati")],
+                    [KeyboardButton(text="❌ Rahbarni o'chirish")],
+                    [KeyboardButton(text="⬅️ Orqaga")],
+                ],
+                resize_keyboard=True,
+            ),
+        )
+
+        return
+    
     data = await state.get_data()
 
     leaders = data["leaders"]
