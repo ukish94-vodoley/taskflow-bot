@@ -124,3 +124,24 @@ async def bind_telegram(user_id: int, telegram_id: int):
         await session.commit()
 
         return True
+
+
+async def get_employees_by_leader(leader_id: int):
+    async with SessionLocal() as session:
+        result = await session.execute(
+            select(User).where(
+                User.role == "employee",
+                User.leader_id == leader_id,
+            )
+        )
+        return result.scalars().all()   
+
+
+async def get_leader_by_id(user_id: int):
+    async with SessionLocal() as session:
+        return await session.get(User, user_id)     
+
+
+async def get_leader_by_id(user_id: int):
+    async with SessionLocal() as session:
+        return await session.get(User, user_id)    

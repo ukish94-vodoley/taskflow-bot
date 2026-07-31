@@ -20,6 +20,7 @@ def super_admin_menu():
                 KeyboardButton(text="🔍 Qidiruv"),
             ],
             [
+                KeyboardButton(text="💰 Moliya"),
                 KeyboardButton(text="⚙️ Sozlamalar"),
             ],
         ],
@@ -32,6 +33,10 @@ def employee_menu():
         keyboard=[
             [
                 KeyboardButton(text="📋 Mening vazifalarim"),
+            ],
+            [
+                KeyboardButton(text="💳 Balansim"),
+                KeyboardButton(text="💸 Xarajat qo'shish"),
             ],
             [
                 KeyboardButton(text="✅ Vazifani yakunlash"),

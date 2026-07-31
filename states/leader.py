@@ -8,3 +8,9 @@ class AddLeader(StatesGroup):
 
 class DeleteLeader(StatesGroup):
     waiting_leader = State()
+
+
+class FinanceTopup(StatesGroup):
+    waiting_employee = State()
+    waiting_amount = State()
+    waiting_description = State()

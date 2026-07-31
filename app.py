@@ -23,6 +23,7 @@ from handlers.employee_tasks import router as employee_tasks_router
 from handlers.leader_review import router as leader_review_router
 from handlers.task_callbacks import router as task_callbacks_router
 from handlers.task_card import router as task_card_router
+from handlers.finance import router as finance_router
 
 from handlers.report import router as report_router
 from handlers.search import router as search_router
@@ -54,6 +55,7 @@ dp.include_router(task_card_router)
 dp.include_router(report_router)
 dp.include_router(search_router)
 dp.include_router(back_router)
+dp.include_router(finance_router)
 
 
 async def main():

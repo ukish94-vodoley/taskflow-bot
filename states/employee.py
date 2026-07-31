@@ -9,3 +9,32 @@ class AddEmployee(StatesGroup):
 
 class DeleteEmployee(StatesGroup):
     waiting_employee = State()
+
+
+class FinanceTopup(StatesGroup):
+    waiting_employee = State()
+    waiting_amount = State()
+    waiting_description = State()
+
+
+class ExpenseFSM(StatesGroup):
+    waiting_amount = State()
+    waiting_description = State()
+
+
+class FinanceHistory(StatesGroup):
+    waiting_employee = State()    
+
+
+class FinanceReport(StatesGroup):
+    waiting_type = State()
+    waiting_employee = State()
+    waiting_period = State()
+    waiting_year = State()
+    waiting_month = State()         
+
+
+class ExpenseEditFSM(StatesGroup):
+    waiting_history = State()
+    waiting_reason = State()
+    waiting_amount = State()

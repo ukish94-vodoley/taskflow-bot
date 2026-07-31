@@ -133,3 +133,54 @@ async def send_reminder_notification(
         )
     except Exception:
         pass
+
+
+async def send_expense_notification(
+    telegram_id: int,
+    employee_name: str,
+    amount: int,
+    description: str,
+    balance: int,
+    photo: str | None = None,
+):
+
+    if not telegram_id:
+        return
+
+    text = (
+        "💸 <b>Yangi xarajat</b>\n\n"
+        f"👷 Xodim: <b>{employee_name}</b>\n"
+        f"💰 Summa: <b>{amount:,} so'm</b>\n"
+        f"📝 Izoh: {description or '-'}\n"
+        f"💵 Qolgan balans: <b>{balance:,} so'm</b>"
+    ).replace(",", " ")
+
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="📜 Tarix",
+                    callback_data=f"finance_history_{employee_name}",
+                )
+            ]
+        ]
+    )
+
+    try:
+        if photo:
+            await bot.send_photo(
+                telegram_id,
+                photo,
+                caption=text,
+                parse_mode="HTML",
+                reply_markup=keyboard,
+            )
+        else:
+            await bot.send_message(
+                telegram_id,
+                text,
+                parse_mode="HTML",
+                reply_markup=keyboard,
+            )
+    except Exception as e:
+        print("SEND EXPENSE ERROR:", e)  
