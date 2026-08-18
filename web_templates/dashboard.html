@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero"><div><div class="eyebrow">KABINET</div><h1>Salom, {{ user.full_name }}</h1><p>TaskFlow’ning veb-kabinetiga xush kelibsiz.</p></div>{% if user.role == 'employee' %}<div class="balance-card"><span>Joriy balans</span><strong>{{ '{:,.0f}'.format(balance).replace(',', ' ') }} so‘m</strong></div>{% endif %}</section>
+<section class="section-heading"><div><h2>So‘nggi e’lonlar</h2><p>Tizimdagi yangiliklar va muhim xabarlar.</p></div><a class="outline-button" href="/announcements">Barchasi</a></section>
+{% if announcements %}<div class="cards">{% for item in announcements %}<article class="card"><small>{{ item.created_at.strftime('%d.%m.%Y %H:%M') }}</small><h3>{{ item.title }}</h3><p>{{ item.body }}</p></article>{% endfor %}</div>{% else %}<div class="empty">Hozircha e’lonlar yo‘q.</div>{% endif %}
+{% endblock %}

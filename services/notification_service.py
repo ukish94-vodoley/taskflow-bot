@@ -137,6 +137,7 @@ async def send_reminder_notification(
 
 async def send_expense_notification(
     telegram_id: int,
+    employee_id: int,
     employee_name: str,
     amount: int,
     description: str,
@@ -159,9 +160,19 @@ async def send_expense_notification(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="📜 Tarix",
-                    callback_data=f"finance_history_{employee_name}",
-                )
+                    text="Oxirgi 3 kun",
+                    callback_data=f"finance_history_{employee_id}_3",
+                ),
+                InlineKeyboardButton(
+                    text="Oxirgi 10 kun",
+                    callback_data=f"finance_history_{employee_id}_10",
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text="📜 Barcha tarix",
+                    callback_data=f"finance_history_{employee_id}_all",
+                ),
             ]
         ]
     )

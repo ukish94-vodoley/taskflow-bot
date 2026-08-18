@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Balans to‘ldirish — TaskFlow{% endblock %}
+{% block content %}
+<section class="section-heading"><div><div class="eyebrow">MOLIYA</div><h1>Balans to‘ldirish</h1><p>Xodim balansiga mablag‘ qo‘shing.</p></div><a class="outline-button" href="/history">Tarixni ko‘rish</a></section>
+<section class="panel narrow"><form method="post" action="/finance/topup" class="form-stack"><input type="hidden" name="csrf" value="{{ csrf_token }}"><label>Xodim<select name="employee_id" required>{% for employee in employees %}<option value="{{ employee.id }}">{{ employee.full_name }}</option>{% endfor %}</select></label><label>Summa (so‘m)<input name="amount" inputmode="numeric" placeholder="500 000" required></label><label>Izoh <span class="muted">(ixtiyoriy)</span><textarea name="description" rows="3" maxlength="1000"></textarea></label><button type="submit">Balansni to‘ldirish</button></form></section>
+{% endblock %}

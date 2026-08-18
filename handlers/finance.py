@@ -1,12 +1,18 @@
+from datetime import datetime, timedelta
+
 from aiogram import Router, F
 from aiogram.types import (
     Message,
     CallbackQuery,
     ReplyKeyboardMarkup,
     KeyboardButton,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    FSInputFile,
 )
 from aiogram.fsm.context import FSMContext
 
+from models import finance
 from states.employee import FinanceTopup
 
 from services.user_service import (
@@ -19,6 +25,8 @@ from services.finance_service import (
     get_all_balances,
     add_topup,
     get_finance_history,
+    get_employee_history_for_period,
+    get_finance_report_data,
 )
 
 from states.employee import FinanceHistory
@@ -32,6 +40,8 @@ from services.finance_service import get_employee_balance
 
 from models.user import User
 from services.user_service import get_user_by_id
+from services.excel_service import create_finance_report
+
 
 # MONTHS = {
 #     "Yanvar": 1,
@@ -310,43 +320,14 @@ async def history_employee(
         await message.answer("Xodim topilmadi.")
         return
 
-    history = await get_finance_history()
     balance = await get_employee_balance(employee.id)
 
     await message.answer(
         f"👤 {employee.full_name}\n"
-        f"💰 Joriy balans: {balance:,} so'm".replace(",", " ")
+        f"💰 Joriy balans: {balance:,} so'm\n\n"
+        "Qaysi davr tarixini ko‘rmoqchisiz?".replace(",", " "),
+        reply_markup=history_period_keyboard(employee.id),
     )
-
-    found = False
-
-    for item in history:
-        finance = item["finance"]
-
-        if finance.employee_id != employee.id:
-            continue
-
-        found = True
-
-        icon = "🟢" if finance.type == "topup" else "🔴"
-        date = finance.created_at.strftime("%d.%m.%Y %H:%M")
-
-        await message.answer(
-            (
-                f"{icon} {finance.amount:,} so'm\n"
-                f"📝 {finance.description or '-'}\n"
-                f"📅 {date}"
-            ).replace(",", " ")
-        )
-
-        if finance.photo:
-            await message.answer_photo(
-                finance.photo,
-                caption="🧾 Chek rasmi"
-            )
-
-    if not found:
-        await message.answer("📭 Tarix mavjud emas.")
 
     await state.clear()
 
@@ -358,40 +339,102 @@ async def history_employee(
 
 
 
-@router.callback_query(F.data.startswith("finance_history_"))
-async def finance_history_callback(callback: CallbackQuery):
-    employee_name = callback.data.replace("finance_history_", "")
-    employee = await get_employee_by_name(employee_name)
+def history_period_keyboard(employee_id: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="Oxirgi 3 kun", callback_data=f"finance_history_{employee_id}_3"),
+                InlineKeyboardButton(text="Oxirgi 10 kun", callback_data=f"finance_history_{employee_id}_10"),
+            ],
+            [InlineKeyboardButton(text="📜 Barcha tarix", callback_data=f"finance_history_{employee_id}_all")],
+        ]
+    )
 
-    if employee is None:
-        await callback.answer("Xodim topilmadi.", show_alert=True)
-        return
 
-    history = await get_finance_history()
+async def send_history_for_period(message: Message, employee: User, days: int | None):
+    history = await get_employee_history_for_period(employee.id, days)
     balance = await get_employee_balance(employee.id)
-
-    text = (
+    period = "Barcha tarix" if days is None else f"Oxirgi {days} kun"
+    header = (
         f"👤 {employee.full_name}\n"
+        f"📅 {period}\n"
         f"💰 Joriy balans: {balance:,} so'm\n\n"
     ).replace(",", " ")
 
-    found = False
+    if not history:
+        await message.answer(header + "📭 Bu davr uchun tarix mavjud emas.")
+        return
 
-    for item in history:
-        finance = item["finance"]
-        if finance.employee_id != employee.id:
-            continue
-        found = True
+    chunks = [header]
+    for finance in history:
         icon = "🟢" if finance.type == "topup" else "🔴"
-        date = finance.created_at.strftime("%d.%m.%Y %H:%M")
-        text += (
+        date = (finance.created_at + timedelta(hours=5)).strftime("%d.%m.%Y %H:%M")
+        row = (
             f"{icon} {finance.amount:,} so'm\n"
             f"📝 {finance.description or '-'}\n"
             f"📅 {date}\n\n"
         ).replace(",", " ")
+        if len(chunks[-1]) + len(row) > 3600:
+            chunks.append("")
+        chunks[-1] += row
 
-    if not found:
-        text += "📭 Tarix mavjud emas."
+    for chunk in chunks:
+        await message.answer(chunk)
 
-    await callback.message.answer(text)
+
+@router.callback_query(F.data.startswith("finance_history_"))
+async def finance_history_callback(callback: CallbackQuery):
+    payload = callback.data.replace("finance_history_", "", 1)
+    try:
+        employee_id, period = payload.rsplit("_", 1)
+        employee_id = int(employee_id)
+        days = None if period == "all" else int(period)
+        if days not in (None, 3, 10):
+            raise ValueError
+        employee = await get_user_by_id(employee_id)
+    except (ValueError, IndexError):
+        # Eski bildirishnomalardagi tugma xodim ismini saqlagan edi.
+        # Ular ham ishlashi uchun barcha tarixni ko'rsatamiz.
+        employee = await get_employee_by_name(payload)
+        days = None
+    if employee is None or employee.role != "employee":
+        await callback.answer("Xodim topilmadi.", show_alert=True)
+        return
+
+    await send_history_for_period(callback.message, employee, days)
     await callback.answer()
+
+
+@router.message(F.text == "📊 Moliya hisoboti")
+async def finance_report_start(message: Message):
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="📅 Oxirgi 1 oylik", callback_data="finance_report_30")],
+            [InlineKeyboardButton(text="📊 Barcha davrlar", callback_data="finance_report_all")],
+        ]
+    )
+    await message.answer("Excel hisobot uchun davrni tanlang:", reply_markup=keyboard)
+
+
+@router.callback_query(F.data.startswith("finance_report_"))
+async def finance_report_callback(callback: CallbackQuery):
+    user = await get_user(callback.from_user.id)
+    if user is None or user.role not in ("super_admin", "leader"):
+        await callback.answer("Bu hisobot uchun ruxsat yo‘q.", show_alert=True)
+        return
+    period = callback.data.replace("finance_report_", "")
+    if period == "30":
+        days, label = 30, "Oxirgi 1 oy"
+    elif period == "all":
+        days, label = None, "Barcha davrlar"
+    else:
+        await callback.answer("Davr noto‘g‘ri.", show_alert=True)
+        return
+
+    await callback.answer("Hisobot tayyorlanmoqda…")
+    rows = await get_finance_report_data(days)
+    output = create_finance_report(rows, label)
+    await callback.message.answer_document(
+        FSInputFile(output),
+        caption=f"📊 {label} uchun moliyaviy hisobot",
+    )

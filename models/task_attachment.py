@@ -4,6 +4,8 @@ from sqlalchemy import (
     String,
     DateTime,
     ForeignKey,
+    Integer,
+    Sequence,
 )
 
 from sqlalchemy.orm import (
@@ -18,6 +20,8 @@ class TaskAttachment(Base):
     __tablename__ = "task_attachments"
 
     id: Mapped[int] = mapped_column(
+        Integer,
+        Sequence("task_attachments_id_seq"),
         primary_key=True,
     )
 
@@ -29,9 +33,10 @@ class TaskAttachment(Base):
         String(300),
     )
 
-    file_name: Mapped[str] = mapped_column(
+    file_name: Mapped[str | None] = mapped_column(
         String(300),
-        default="",
+        nullable=True,
+        default=None,
     )
 
     file_type: Mapped[str] = mapped_column(

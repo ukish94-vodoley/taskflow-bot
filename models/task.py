@@ -4,6 +4,8 @@ from sqlalchemy import (
     String,
     DateTime,
     ForeignKey,
+    Integer,
+    Sequence,
 )
 
 from sqlalchemy.orm import (
@@ -14,10 +16,14 @@ from sqlalchemy.orm import (
 from models.base import Base
 
 
+
+
 class Task(Base):
     __tablename__ = "tasks"
 
     id: Mapped[int] = mapped_column(
+        Integer,
+        Sequence("tasks_id_seq"),
         primary_key=True,
     )
 
@@ -50,14 +56,16 @@ class Task(Base):
         default="Yangi",
     )
 
-    comment: Mapped[str] = mapped_column(
+    comment: Mapped[str | None] = mapped_column(
         String(1000),
-        default="",
+        nullable=True,
+        default=None,
     )
 
-    photo: Mapped[str] = mapped_column(
+    photo: Mapped[str | None] = mapped_column(
         String(500),
-        default="",
+        nullable=True,
+        default=None,
     )
 
     created_at: Mapped[datetime] = mapped_column(

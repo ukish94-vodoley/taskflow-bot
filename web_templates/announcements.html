@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}E’lonlar — TaskFlow{% endblock %}
+{% block content %}
+<section class="section-heading"><div><div class="eyebrow">E’LONLAR</div><h1>Yangiliklar va xabarlar</h1></div></section>
+{% if user.role in ['super_admin', 'leader'] %}
+<section class="panel"><h2>Yangi e’lon berish</h2><form method="post" action="/announcements" class="form-stack"><input type="hidden" name="csrf" value="{{ csrf_token }}"><label>Sarlavha<input name="title" maxlength="255" required></label><label>Matn<textarea name="body" rows="5" required></textarea></label><fieldset class="recipient-box"><legend>Kimga yuborilsin?</legend><label class="check-label"><input type="checkbox" name="send_to_all" value="yes" checked> Barcha xodimlarga yuborish</label><label>Tanlangan xodimlar <span class="muted">(barchaga yuborish belgisi olinmasa)</span><select name="recipient_ids" multiple size="6">{% for employee in employees %}<option value="{{ employee.id }}">{{ employee.full_name }}</option>{% endfor %}</select></label></fieldset><button type="submit">E’lonni joylash va Telegramga yuborish</button></form></section>
+{% endif %}
+<div class="cards">{% for item in announcements %}<article class="card"><small>{{ item.created_at.strftime('%d.%m.%Y %H:%M') }}</small><h2>{{ item.title }}</h2><p class="multiline">{{ item.body }}</p></article>{% else %}<div class="empty">Hozircha e’lonlar yo‘q.</div>{% endfor %}</div>
+{% endblock %}

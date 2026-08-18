@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Kirish — TaskFlow{% endblock %}
+{% block content %}
+<section class="auth-card">
+  <div class="eyebrow">TASKFLOW KABINET</div>
+  <h1>Xush kelibsiz</h1>
+  <p>Telefon raqamingizni kiriting. Tasdiqlash kodi Telegram bot orqali keladi.</p>
+  <form method="post" action="/login" class="form-stack">
+    <label>Telefon raqam<input name="phone" type="tel" placeholder="+998 90 123 45 67" required autofocus></label>
+    <button type="submit">Kod olish</button>
+  </form>
+</section>
+{% endblock %}

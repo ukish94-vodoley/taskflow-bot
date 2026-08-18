@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Balans tarixi — TaskFlow{% endblock %}
+{% block content %}
+<section class="section-heading">
+  <div><div class="eyebrow">MOLIYA</div><h1>Balans tarixi</h1><p>To‘ldirishlar va xarajatlar harakati.</p></div>
+  {% if user.role in ['super_admin', 'leader'] %}<a class="outline-button" href="/finance">Balans to‘ldirish</a>{% endif %}
+</section>
+{% if employees %}
+  <section class="panel history-filter">
+    <form method="get" action="/history"><label>Xodim<select name="employee_id" onchange="this.form.submit()">
+      {% if user.role != 'employee' %}<option value="" {% if selected_id is none %}selected{% endif %}>Barcha xodimlar</option>{% endif %}
+      {% for employee in employees %}<option value="{{ employee.id }}" {% if employee.id == selected_id %}selected{% endif %}>{{ employee.full_name }}</option>{% endfor %}
+    </select></label></form>
+    <div class="balance-card"><span>Joriy balans</span><strong>{{ '{:,.0f}'.format(balance).replace(',', ' ') }} so‘m</strong></div>
+  </section>
+  <section class="panel table-wrap"><table><thead><tr><th>Sana</th>{% if user.role != 'employee' %}<th>Xodim</th>{% endif %}<th>Tur</th><th>Izoh</th><th class="amount">Summa</th></tr></thead><tbody>
+    {% for item in entries %}<tr><td>{{ item.finance.created_at.strftime('%d.%m.%Y %H:%M') }}</td>{% if user.role != 'employee' %}<td>{{ item.employee_name }}</td>{% endif %}<td><span class="tag {{ item.finance.type }}">{{ 'To‘ldirish' if item.finance.type == 'topup' else 'Xarajat' }}</span></td><td>{{ item.finance.description or '—' }}</td><td class="amount {{ item.finance.type }}">{{ '+' if item.finance.type == 'topup' else '−' }}{{ '{:,.0f}'.format(item.finance.amount).replace(',', ' ') }} so‘m</td></tr>
+    {% else %}<tr><td colspan="5" class="empty">Bu xodim bo‘yicha harakatlar yo‘q.</td></tr>{% endfor %}
+  </tbody></table></section>
+{% else %}<div class="empty">Ko‘rsatish uchun xodim topilmadi.</div>{% endif %}
+{% endblock %}

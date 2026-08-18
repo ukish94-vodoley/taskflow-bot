@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}TaskFlow{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/employees.css">
+  <link rel="stylesheet" href="/static/announcements.css">
+</head>
+<body>
+  {% if user %}
+  <header class="topbar">
+    <a class="brand" href="/">TaskFlow</a>
+    <nav>
+      <a href="/announcements">E’lonlar</a>
+      <a href="/tasks">Vazifalar</a>
+      {% if user.role in ['super_admin', 'leader'] %}<a href="/employees">Xodimlar</a>{% endif %}
+      {% if user.role in ['super_admin', 'leader'] %}<a href="/finance">Balans to‘ldirish</a>{% endif %}
+      <a href="/history">Balans tarixi</a>
+    </nav>
+    <div class="profile"><span>{{ user.full_name }}</span><form method="post" action="/logout"><input type="hidden" name="csrf" value="{{ csrf_token }}"><button class="link-button">Chiqish</button></form></div>
+  </header>
+  {% endif %}
+  <main class="container">
+    {% if notice %}<div class="notice {{ notice.kind }}">{{ notice.message }}</div>{% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

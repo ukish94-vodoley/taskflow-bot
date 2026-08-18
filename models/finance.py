@@ -5,6 +5,7 @@ from sqlalchemy import (
     String,
     Integer,
     DateTime,
+    Sequence,
 )
 
 from sqlalchemy.orm import (
@@ -19,6 +20,8 @@ class Finance(Base):
     __tablename__ = "finance"
 
     id: Mapped[int] = mapped_column(
+        Integer,
+        Sequence("finance_id_seq"),
         primary_key=True,
     )
 
@@ -43,9 +46,10 @@ class Finance(Base):
         Integer,
     )
 
-    description: Mapped[str] = mapped_column(
+    description: Mapped[str | None] = mapped_column(
         String(1000),
-        default="",
+        nullable=True,
+        default=None,
     )
 
     photo: Mapped[str] = mapped_column(
@@ -73,9 +77,10 @@ class Finance(Base):
         nullable=True,
     )
 
-    edit_reason: Mapped[str] = mapped_column(
+    edit_reason: Mapped[str | None] = mapped_column(
         String(1000),
-        default="",
+        nullable=True,
+        default=None,
     )
 
     approved_by: Mapped[int | None] = mapped_column(

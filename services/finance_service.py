@@ -5,6 +5,10 @@ from database.database import SessionLocal
 from models.finance import Finance
 from models.user import User
 
+from datetime import datetime, timedelta
+from sqlalchemy import select
+from models.finance import Finance
+
 
 async def add_topup(
     employee_id: int,
@@ -173,20 +177,110 @@ async def get_employee_history(employee_id: int, limit: int = 20):
 
         return result.scalars().all()
 
-async def get_employee_finance_summary(employee_id: int):
-    balance = await get_employee_balance(employee_id)
-    history = await get_employee_history(employee_id, limit=10)
-    return {
-        "balance": balance,
-        "history": history,
-    }
+
+async def get_employee_history_for_period(
+    employee_id: int,
+    days: int | None = None,
+):
+    async with SessionLocal() as session:
+        query = select(Finance).where(Finance.employee_id == employee_id)
+
+        if days is not None:
+            query = query.where(Finance.created_at >= datetime.utcnow() - timedelta(days=days))
+
+        result = await session.execute(query.order_by(Finance.created_at.desc()))
+        return result.scalars().all()
 
 
-async def create_edit_request(finance_id:int,new_amount:int,reason:str):
-    return False
+async def get_finance_report_data(days: int | None = None):
+    async with SessionLocal() as session:
+        Employee = aliased(User)
+        Leader = aliased(User)
+        query = (
+            select(Finance, Employee.full_name, Leader.full_name)
+            .join(Employee, Finance.employee_id == Employee.id)
+            .join(Leader, Finance.leader_id == Leader.id)
+        )
+        if days is not None:
+            query = query.where(Finance.created_at >= datetime.utcnow() - timedelta(days=days))
+        result = await session.execute(query.order_by(Finance.created_at.desc()))
+        return result.all()
 
-async def approve_edit_request(finance_id:int,leader_id:int):
-    return False
 
-async def reject_edit_request(finance_id:int,leader_id:int):
-    return False
+async def get_last_week_report(employee_id: int | None = None):
+    async with SessionLocal() as session:
+
+        start_date = datetime.now() - timedelta(days=7)
+
+        query = select(Finance).where(
+            Finance.created_at >= start_date
+        )
+
+        if employee_id:
+            query = query.where(
+                Finance.employee_id == employee_id
+            )
+
+        query = query.order_by(
+            Finance.created_at.desc()
+        )
+
+        result = await session.execute(query)
+
+        return result.scalars().all()
+
+
+async def get_last_month_report(employee_id: int | None = None):
+    async with SessionLocal() as session:
+
+        start_date = datetime.now() - timedelta(days=30)
+
+        query = select(Finance).where(
+            Finance.created_at >= start_date
+        )
+
+        if employee_id:
+            query = query.where(
+                Finance.employee_id == employee_id
+            )
+
+        query = query.order_by(
+            Finance.created_at.desc()
+        )
+
+        result = await session.execute(query)
+
+        return result.scalars().all()
+
+
+async def get_month_report(
+    year: int,
+    month: int,
+    employee_id: int | None = None,
+):
+    async with SessionLocal() as session:
+
+        start_date = datetime(year, month, 1)
+
+        if month == 12:
+            end_date = datetime(year + 1, 1, 1)
+        else:
+            end_date = datetime(year, month + 1, 1)
+
+        query = select(Finance).where(
+            Finance.created_at >= start_date,
+            Finance.created_at < end_date,
+        )
+
+        if employee_id:
+            query = query.where(
+                Finance.employee_id == employee_id
+            )
+
+        query = query.order_by(
+            Finance.created_at.desc()
+        )
+
+        result = await session.execute(query)
+
+        return result.scalars().all()            

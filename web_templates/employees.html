@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Xodimlar — TaskFlow{% endblock %}
+{% block content %}
+<section class="section-heading"><div><div class="eyebrow">JAMOA</div><h1>Xodimlar</h1><p>Jamoa a’zolari va ularning joriy balanslari.</p></div><a class="outline-button" href="/history">Harakatlar tarixi</a></section>
+{% if items %}<div class="employee-grid">{% for item in items %}<article class="employee-card"><div class="avatar">{{ item.employee.full_name.split()[:2]|join('')|upper }}</div><div class="employee-info"><h2>{{ item.employee.full_name }}</h2><p>{{ item.employee.phone }}</p><div class="employee-balance"><span>Balans</span><strong class="{{ 'positive' if item.balance >= 0 else 'negative' }}">{{ '{:,.0f}'.format(item.balance).replace(',', ' ') }} so‘m</strong></div><a href="/history?employee_id={{ item.employee.id }}">Tarixni ko‘rish →</a></div></article>{% endfor %}</div>{% else %}<div class="empty">Hozircha xodimlar yo‘q.</div>{% endif %}
+{% endblock %}

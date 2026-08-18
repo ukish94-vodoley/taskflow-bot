@@ -1,22 +1,28 @@
 from datetime import datetime
 
+from sqlalchemy.orm import Mapped, mapped_column
+
+from models.base import Base
+
 from sqlalchemy import (
     BigInteger,
+    Integer,
+    Sequence,
     String,
     DateTime,
     Boolean,
     ForeignKey,
 )
 
-from sqlalchemy.orm import Mapped, mapped_column
-
-from models.base import Base
-
 
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(
+        Integer,
+        Sequence("users_id_seq"),
+        primary_key=True,
+    )
 
     telegram_id: Mapped[int | None] = mapped_column(
         BigInteger,
